@@ -1,0 +1,452 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+
+local function getMobileParent()
+    if get_hidden_gui or gethui then
+        return (get_hidden_gui or gethui)()
+    else
+        return game:GetService("CoreGui"):FindFirstChild("RobloxGui") or game:GetService("CoreGui")
+    end
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "Bro_Joystick_Speed_Edition"
+ScreenGui.Parent = getMobileParent()
+ScreenGui.ResetOnSpawn = false
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 27)
+MainFrame.Position = UDim2.new(0.5, -175, 0.4, -90)
+MainFrame.Size = UDim2.new(0, 0, 0, 0)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.ClipsDescendants = true
+MainFrame.ZIndex = 10
+
+local MainGradient = Instance.new("UIGradient")
+MainGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(35, 35, 38)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(22, 22, 24)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 15, 17))
+})
+MainGradient.Rotation = 45
+MainGradient.Parent = MainFrame
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 14)
+UICorner.Parent = MainFrame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(212, 175, 55)
+UIStroke.Thickness = 2.5
+UIStroke.Parent = MainFrame
+
+local Header = Instance.new("Frame")
+Header.Name = "Header"
+Header.Parent = MainFrame
+Header.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Header.BackgroundTransparency = 0.3
+Header.Size = UDim2.new(1, 0, 0, 44)
+Header.BorderSizePixel = 0
+Header.ZIndex = 11
+
+local HeaderCorner = Instance.new("UICorner")
+HeaderCorner.CornerRadius = UDim.new(0, 14)
+HeaderCorner.Parent = Header
+
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Parent = Header
+Title.BackgroundTransparency = 1
+Title.Position = UDim2.new(0, 15, 0, 0)
+Title.Size = UDim2.new(0, 150, 1, 0)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "Bro"
+Title.TextColor3 = Color3.fromRGB(212, 175, 55)
+Title.TextSize = 18
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.ZIndex = 12
+
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Name = "CloseBtn"
+CloseBtn.Parent = Header
+CloseBtn.BackgroundColor3 = Color3.fromRGB(55, 30, 30)
+CloseBtn.Position = UDim2.new(1, -38, 0, 7)
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+CloseBtn.TextSize = 14
+CloseBtn.ZIndex = 13
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
+
+local MinimizeBtn = Instance.new("TextButton")
+MinimizeBtn.Name = "MinimizeBtn"
+MinimizeBtn.Parent = Header
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(38, 38, 40)
+MinimizeBtn.Position = UDim2.new(1, -74, 0, 7)
+MinimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+MinimizeBtn.Font = Enum.Font.GothamBold
+MinimizeBtn.Text = "-"
+MinimizeBtn.TextColor3 = Color3.fromRGB(220, 220, 220)
+MinimizeBtn.TextSize = 14
+MinimizeBtn.ZIndex = 13
+Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0, 8)
+
+local Content = Instance.new("Frame")
+Content.Name = "Content"
+Content.Parent = MainFrame
+Content.BackgroundTransparency = 1
+Content.Position = UDim2.new(0, 0, 0, 44)
+Content.Size = UDim2.new(1, 0, 1, -44)
+Content.Visible = false
+Content.ZIndex = 11
+
+local TextBoxContainer = Instance.new("Frame")
+TextBoxContainer.Name = "TextBoxContainer"
+TextBoxContainer.Parent = Content
+TextBoxContainer.BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+TextBoxContainer.Position = UDim2.new(0, 15, 0, 15)
+TextBoxContainer.Size = UDim2.new(0, 180, 0, 44)
+TextBoxContainer.ZIndex = 12
+Instance.new("UICorner", TextBoxContainer).CornerRadius = UDim.new(0, 8)
+
+local NameBox = Instance.new("TextBox")
+NameBox.Name = "NameBox"
+NameBox.Parent = TextBoxContainer
+NameBox.BackgroundTransparency = 1
+NameBox.Position = UDim2.new(0, 12, 0, 0)
+NameBox.Size = UDim2.new(1, -24, 1, 0)
+NameBox.Font = Enum.Font.Gotham
+NameBox.PlaceholderText = "NICKNAME"
+NameBox.PlaceholderColor3 = Color3.fromRGB(100, 100, 100)
+NameBox.Text = ""
+NameBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+NameBox.TextSize = 14
+NameBox.TextXAlignment = Enum.TextXAlignment.Left
+NameBox.ZIndex = 14
+
+local PredictionLabel = Instance.new("TextLabel")
+PredictionLabel.Name = "PredictionLabel"
+PredictionLabel.Parent = TextBoxContainer
+PredictionLabel.BackgroundTransparency = 1
+PredictionLabel.Position = UDim2.new(0, 12, 0, 0)
+PredictionLabel.Size = UDim2.new(1, -24, 1, 0)
+PredictionLabel.Font = Enum.Font.Gotham
+PredictionLabel.Text = ""
+PredictionLabel.TextColor3 = Color3.fromRGB(212, 175, 55)
+PredictionLabel.TextTransparency = 0.5
+PredictionLabel.TextSize = 14
+PredictionLabel.TextXAlignment = Enum.TextXAlignment.Left
+PredictionLabel.ZIndex = 13
+
+local BangBtn = Instance.new("TextButton")
+BangBtn.Name = "BangBtn"
+BangBtn.Parent = Content
+BangBtn.BackgroundColor3 = Color3.fromRGB(60, 50, 30)
+BangBtn.Position = UDim2.new(0, 15, 0, 74)
+BangBtn.Size = UDim2.new(0, 180, 0, 44)
+BangBtn.Font = Enum.Font.GothamBold
+BangBtn.Text = "BANG"
+BangBtn.TextColor3 = Color3.fromRGB(212, 175, 55)
+BangBtn.TextSize = 15
+BangBtn.ZIndex = 12
+Instance.new("UICorner", BangBtn).CornerRadius = UDim.new(0, 8)
+
+local BangGradient = Instance.new("UIGradient")
+BangGradient.Color = ColorSequence.new(Color3.fromRGB(75, 60, 35), Color3.fromRGB(40, 30, 15))
+BangGradient.Rotation = 90
+BangGradient.Parent = BangBtn
+
+local FlyBtn = Instance.new("TextButton")
+FlyBtn.Name = "FlyBtn"
+FlyBtn.Parent = Content
+FlyBtn.BackgroundColor3 = Color3.fromRGB(25, 45, 75)
+FlyBtn.Position = UDim2.new(1, -145, 0, 15)
+FlyBtn.Size = UDim2.new(0, 130, 0, 44)
+FlyBtn.Font = Enum.Font.GothamBold
+FlyBtn.Text = "FLY: OFF"
+FlyBtn.TextColor3 = Color3.fromRGB(130, 190, 255)
+FlyBtn.TextSize = 15
+FlyBtn.ZIndex = 12
+Instance.new("UICorner", FlyBtn).CornerRadius = UDim.new(0, 8)
+
+local FlyGradient = Instance.new("UIGradient")
+FlyGradient.Color = ColorSequence.new(Color3.fromRGB(35, 65, 105), Color3.fromRGB(15, 30, 55))
+FlyGradient.Rotation = 90
+FlyGradient.Parent = FlyBtn
+
+local flySpeed = 50
+
+local SpeedContainer = Instance.new("Frame")
+SpeedContainer.Name = "SpeedContainer"
+SpeedContainer.Parent = Content
+SpeedContainer.BackgroundTransparency = 1
+SpeedContainer.Position = UDim2.new(1, -145, 0, 74)
+SpeedContainer.Size = UDim2.new(0, 130, 0, 44)
+SpeedContainer.ZIndex = 12
+
+local MinusBtn = Instance.new("TextButton")
+MinusBtn.Name = "MinusBtn"
+MinusBtn.Parent = SpeedContainer
+MinusBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 38)
+MinusBtn.Size = UDim2.new(0, 32, 1, 0)
+MinusBtn.Font = Enum.Font.GothamBold
+MinusBtn.Text = "-10"
+MinusBtn.TextColor3 = Color3.fromRGB(220, 220, 220)
+MinusBtn.TextSize = 12
+MinusBtn.ZIndex = 13
+Instance.new("UICorner", MinusBtn).CornerRadius = UDim.new(0, 6)
+
+local SpeedBox = Instance.new("TextBox")
+SpeedBox.Name = "SpeedBox"
+SpeedBox.Parent = SpeedContainer
+SpeedBox.BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+SpeedBox.Position = UDim2.new(0, 37, 0, 0)
+SpeedBox.Size = UDim2.new(0, 56, 1, 0)
+SpeedBox.Font = Enum.Font.GothamBold
+SpeedBox.Text = tostring(flySpeed)
+SpeedBox.TextColor3 = Color3.fromRGB(212, 175, 55)
+SpeedBox.TextSize = 14
+SpeedBox.ZIndex = 13
+Instance.new("UICorner", SpeedBox).CornerRadius = UDim.new(0, 6)
+
+local SpeedStroke = Instance.new("UIStroke")
+SpeedStroke.Color = Color3.fromRGB(50, 50, 52)
+SpeedStroke.Thickness = 1
+SpeedStroke.Parent = SpeedBox
+
+local PlusBtn = Instance.new("TextButton")
+PlusBtn.Name = "PlusBtn"
+PlusBtn.Parent = SpeedContainer
+PlusBtn.Position = UDim2.new(1, -32, 0, 0)
+PlusBtn.Size = UDim2.new(0, 32, 1, 0)
+PlusBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 38)
+PlusBtn.Font = Enum.Font.GothamBold
+PlusBtn.Text = "+10"
+PlusBtn.TextColor3 = Color3.fromRGB(220, 220, 220)
+PlusBtn.TextSize = 12
+PlusBtn.ZIndex = 13
+Instance.new("UICorner", PlusBtn).CornerRadius = UDim.new(0, 6)
+
+local function updateSpeedDisplay()
+    SpeedBox.Text = tostring(flySpeed)
+end
+
+MinusBtn.MouseButton1Click:Connect(function()
+    flySpeed = math.max(1, flySpeed - 10)
+    updateSpeedDisplay()
+end)
+
+PlusBtn.MouseButton1Click:Connect(function()
+    flySpeed = math.min(1000, flySpeed + 10)
+    updateSpeedDisplay()
+end)
+
+SpeedBox.FocusLost:Connect(function(enterPressed)
+    local num = tonumber(SpeedBox.Text)
+    if num and num > 0 then
+        flySpeed = math.clamp(math.floor(num), 1, 1000)
+    end
+    updateSpeedDisplay()
+end)
+
+local openTween = TweenService:Create(MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+    Size = UDim2.new(0, 350, 0, 185),
+    Position = UDim2.new(0.5, -175, 0.4, -92)
+})
+openTween:Play()
+openTween.Completed:Connect(function() Content.Visible = true end)
+
+local dragToggle, dragStart, startPos
+Header.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragToggle = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragToggle = false end
+        end)
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragToggle and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+local isMinimized = false
+MinimizeBtn.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    Content.Visible = not isMinimized
+    TweenService:Create(MainFrame, TweenInfo.new(0.25), {Size = UDim2.new(0, 350, 0, isMinimized and 44 or 185)}):Play()
+end)
+
+CloseBtn.MouseButton1Click:Connect(function()
+    Content.Visible = false
+    local closeTween = TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+        Size = UDim2.new(0, 0, 0, 0),
+        Position = MainFrame.Position + UDim2.new(0, 175, 0, 92)
+    })
+    closeTween:Play()
+    closeTween.Completed:Connect(function() ScreenGui:Destroy() end)
+end)
+
+local targetPlayer = nil
+local function findPlayer(str)
+    str = str:lower()
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p.Name:lower():sub(1, #str) == str or p.DisplayName:lower():sub(1, #str) == str then return p end
+    end
+end
+
+NameBox:GetPropertyChangedSignal("Text"):Connect(function()
+    local text = NameBox.Text
+    if text == "" then PredictionLabel.Text = ""; targetPlayer = nil; return end
+    local found = findPlayer(text)
+    if found then
+        targetPlayer = found
+        PredictionLabel.Text = text .. found.Name:sub(#text + 1)
+    else
+        PredictionLabel.Text = ""
+        targetPlayer = nil
+    end
+end)
+
+NameBox.FocusLost:Connect(function()
+    if targetPlayer then NameBox.Text = targetPlayer.Name; PredictionLabel.Text = "" end
+end)
+
+local flying = false
+local flyConnection
+
+FlyBtn.MouseButton1Click:Connect(function()
+    flying = not flying
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    local hum = char and char:FindFirstChild("Humanoid")
+    
+    if flying and hrp and hum then
+        FlyBtn.Text = "FLY: ON"
+        FlyGradient.Color = ColorSequence.new(Color3.fromRGB(35, 105, 55), Color3.fromRGB(15, 55, 25))
+        
+        local bv = Instance.new("BodyVelocity")
+        bv.Name = "JoystickFlyVelocity"
+        bv.MaxForce = Vector3.new(1e6, 1e6, 1e6)
+        bv.Velocity = Vector3.zero
+        bv.Parent = hrp
+        
+        local bg = Instance.new("BodyGyro")
+        bg.Name = "JoystickFlyGyro"
+        bg.MaxTorque = Vector3.new(1e6, 1e6, 1e6)
+        bg.CFrame = hrp.CFrame
+        bg.Parent = hrp
+        
+        hum:ChangeState(Enum.HumanoidStateType.Physics)
+        
+        flyConnection = RunService.RenderStepped:Connect(function()
+            if not hrp or not hrp.Parent or not hum then return end
+            local camera = workspace.CurrentCamera
+            
+            bg.CFrame = camera.CFrame
+            local moveDir = hum.MoveDirection
+            
+            if moveDir.Magnitude > 0 then
+                local finalVelocity = moveDir * flySpeed
+                local localMove = camera.CFrame:VectorToObjectSpace(moveDir)
+                local verticalComponent = 0
+                
+                if localMove.Z < -0.1 then 
+                    verticalComponent = camera.CFrame.LookVector.Y * flySpeed
+                elseif localMove.Z > 0.1 then 
+                    verticalComponent = -camera.CFrame.LookVector.Y * flySpeed
+                end
+                
+                bv.Velocity = Vector3.new(finalVelocity.X, verticalComponent, finalVelocity.Z)
+            else
+                bv.Velocity = Vector3.zero
+            end
+            
+            hrp.Velocity = Vector3.zero
+        end)
+    else
+        FlyBtn.Text = "FLY: OFF"
+        FlyGradient.Color = ColorSequence.new(Color3.fromRGB(35, 65, 105), Color3.fromRGB(15, 30, 55))
+        
+        if flyConnection then flyConnection:Disconnect() end
+        if hrp then
+            if hrp:FindFirstChild("JoystickFlyVelocity") then hrp.JoystickFlyVelocity:Destroy() end
+            if hrp:FindFirstChild("JoystickFlyGyro") then hrp.JoystickFlyGyro:Destroy() end
+        end
+        if hum then 
+            hum:ChangeState(Enum.HumanoidStateType.GettingUp) 
+        end
+    end
+end)
+
+local banging = false
+local bangConnection
+
+BangBtn.MouseButton1Click:Connect(function()
+    banging = not banging
+    if banging then
+        if not targetPlayer or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            banging = false
+            return
+        end
+        
+        BangGradient.Color = ColorSequence.new(Color3.fromRGB(105, 35, 35), Color3.fromRGB(55, 15, 15))
+        
+        local myChar = LocalPlayer.Character
+        local myHrp = myChar:WaitForChild("HumanoidRootPart")
+        local myHum = myChar:WaitForChild("Humanoid")
+        
+        local animator = myHum:FindFirstChildOfClass("Animator")
+        if animator then
+            local animInstance = Instance.new("Animation")
+            animInstance.AnimationId = "rbxassetid://180426354"
+            pcall(function()
+                local track = animator:LoadAnimation(animInstance)
+                track.Name = "BangTrack"
+                track:Play()
+                track:AdjustSpeed(3.5)
+            end)
+        end
+        
+        bangConnection = RunService.Heartbeat:Connect(function()
+            local tChar = targetPlayer.Character
+            local tHrp = tChar and tChar:FindFirstChild("HumanoidRootPart")
+            
+            if tHrp and myHrp then
+                local movement = math.sin(tick() * 35) * 0.9
+                myHrp.CFrame = tHrp.CFrame * CFrame.new(0, 0, 1.1 + movement)
+            else
+                if bangConnection then bangConnection:Disconnect() end
+            end
+        end)
+    else
+        BangGradient.Color = ColorSequence.new(Color3.fromRGB(75, 60, 35), Color3.fromRGB(40, 30, 15))
+        if bangConnection then bangConnection:Disconnect() end
+        
+        local myChar = LocalPlayer.Character
+        local myHum = myChar and myChar:FindFirstChild("Humanoid")
+        if myHum then
+            local animator = myHum:FindFirstChildOfClass("Animator")
+            if animator then
+                for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+                    if track.Name == "BangTrack" or track.Animation.AnimationId == "rbxassetid://180426354" then
+                        track:Stop()
+                    end
+                end
+            end
+        end
+    end
+end)
+
