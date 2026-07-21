@@ -1,0 +1,235 @@
+-- LIQUID GLASS AUTOCLICKER (FOR SCRIPTBLOX TOP 1)
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
+local parent = CoreGui:FindFirstChild("RobloxGui") or Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- Удаляем старый если остался
+if parent:FindFirstChild("LiquidGlassClicker") then
+    parent.LiquidGlassClicker:Destroy()
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "LiquidGlassClicker"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = parent
+
+-- Функция для перетаскивания элементов (UI Dragging)
+local function makeDraggable(frame)
+    local dragToggle = nil
+    local dragStart = nil
+    local startPos = nil
+
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragToggle = true
+            dragStart = input.Position
+            startPos = frame.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragToggle = false
+                end
+            end)
+        end
+    end)
+
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            if dragToggle then
+                local delta = input.Position - dragStart
+                frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            end
+        end
+    end)
+end
+
+-- Главное меню (Liquid Glass Style)
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 260, 0, 180)
+MainFrame.Position = UDim2.new(0.5, -130, 0.4, -90)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+MainFrame.BackgroundTransparency = 0.35 -- Эффект стекла
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
+makeDraggable(MainFrame)
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 12) -- Твои каноничные 0, 12
+MainCorner.Parent = MainFrame
+
+-- Стекло-эффект (Блик/Градиент)
+local Gradient = Instance.new("UIGradient")
+Gradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 150, 150))
+})
+Gradient.Rotation = 45
+Gradient.Parent = MainFrame
+
+-- Обводка (UIStroke для ощущения стекла)
+local Stroke = Instance.new("UIStroke")
+local StrokeGradient = Instance.new("UIGradient")
+Stroke.Thickness = 1.5
+Stroke.Color = Color3.fromRGB(255, 255, 255)
+Stroke.Transparency = 0.5
+StrokeGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 50, 50))
+})
+StrokeGradient.Parent = Stroke
+Stroke.Parent = MainFrame
+
+-- Заголовок
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundTransparency = 1
+Title.Text = "LIQUID GLASS CLICKER"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 14
+Title.Parent = MainFrame
+
+-- Кнопка переключения CLICKER: ON/OFF
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(0, 220, 0, 35)
+ToggleBtn.Position = UDim2.new(0, 20, 0, 45)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+ToggleBtn.BackgroundTransparency = 0.2
+ToggleBtn.Text = "CLICKER: OFF"
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextSize = 14
+ToggleBtn.Parent = MainFrame
+
+local BtnCorner = Instance.new("UICorner")
+BtnCorner.CornerRadius = UDim.new(0, 8)
+BtnCorner.Parent = ToggleBtn
+
+-- Поле ввода скорости
+local SpeedInput = Instance.new("TextBox")
+SpeedInput.Size = UDim2.new(0, 160, 0, 35)
+SpeedInput.Position = UDim2.new(0, 20, 0, 95)
+SpeedInput.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+SpeedInput.BackgroundTransparency = 0.6
+SpeedInput.Text = "0.1"
+SpeedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedInput.Font = Enum.Font.Gotham
+SpeedInput.TextSize = 14
+SpeedInput.PlaceholderText = "Speed (sec)"
+SpeedInput.Parent = MainFrame
+
+local InputCorner = Instance.new("UICorner")
+InputCorner.CornerRadius = UDim.new(0, 8)
+InputCorner.Parent = SpeedInput
+
+-- Кнопка ПЛЮС (+) для добавления кружков "Т"
+local AddBtn = Instance.new("TextButton")
+AddBtn.Size = UDim2.new(0, 50, 0, 35)
+AddBtn.Position = UDim2.new(0, 190, 0, 95)
+AddBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+AddBtn.BackgroundTransparency = 0.7
+AddBtn.Text = "+"
+AddBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+AddBtn.Font = Enum.Font.GothamBold
+AddBtn.TextSize = 20
+AddBtn.Parent = MainFrame
+
+local AddCorner = Instance.new("UICorner")
+AddCorner.CornerRadius = UDim.new(0, 8)
+AddCorner.Parent = AddBtn
+
+-- Логика кликера
+local isClicking = false
+local clickDelay = 0.1
+local targetCircles = {}
+
+-- Обновление скорости
+SpeedInput:GetPropertyChangedSignal("Text"):Connect(function()
+    local val = tonumber(SpeedInput.Text)
+    if val then
+        clickDelay = val
+    end
+end)
+
+-- Переключение On/Off
+ToggleBtn.MouseButton1Click:Connect(function()
+    isClicking = not isClicking
+    if isClicking then
+        ToggleBtn.Text = "CLICKER: ON"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+    else
+        ToggleBtn.Text = "CLICKER: OFF"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    end
+end)
+
+-- Спавн кружка "Т"
+AddBtn.MouseButton1Click:Connect(function()
+    local TargetCircle = Instance.new("Frame")
+    TargetCircle.Size = UDim2.new(0, 35, 0, 35)
+    TargetCircle.Position = UDim2.new(0.5, -17, 0.5, -17)
+    TargetCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    TargetCircle.BackgroundTransparency = 0.4
+    TargetCircle.ZIndex = 5
+    TargetCircle.Parent = ScreenGui
+    makeDraggable(TargetCircle)
+
+    local CircleCorner = Instance.new("UICorner")
+    CircleCorner.CornerRadius = UDim.new(1, 0) -- Делаем идеальный круг
+    CircleCorner.Parent = TargetCircle
+
+    local CircleStroke = Instance.new("UIStroke")
+    CircleStroke.Thickness = 1.5
+    CircleStroke.Color = Color3.fromRGB(255, 255, 255)
+    CircleStroke.Parent = TargetCircle
+
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(1, 0, 1, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = "T"
+    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Label.Font = Enum.Font.GothamBold
+    Label.TextSize = 16
+    Label.Parent = TargetCircle
+
+    -- Добавляем в таблицу живых мишеней
+    table.insert(targetCircles, TargetCircle)
+    
+    -- Правый клик / долгое нажатие удаляет таргет, чтоб не забивать экран
+    TargetCircle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton2 then
+            for i, v in ipairs(targetCircles) do
+                if v == TargetCircle then
+                    table.remove(targetCircles, i)
+                    break
+                end
+            end
+            TargetCircle:Destroy()
+        end
+    end)
+end)
+
+-- Воркер кликов через поток
+task.spawn(function()
+    while true do
+        if isClicking and #targetCircles > 0 then
+            for _, circle in ipairs(targetCircles) do
+                if circle and circle.Parent then
+                    -- Считаем центр кружка на экране
+                    local x = circle.AbsolutePosition.X + (circle.AbsoluteSize.X / 2)
+                    local y = circle.AbsolutePosition.Y + (circle.AbsoluteSize.Y / 2) + 36 -- смещение топбара Roblox
+                    
+                    -- Симулируем клик мыши
+                    VirtualInputManager:SendMouseButtonEvent(x, y, 0, true, game, 1)
+                    task.wait(0.005)
+                    VirtualInputManager:SendMouseButtonEvent(x, y, 0, false, game, 1)
+                end
+            end
+        end
+        task.wait(clickDelay)
+    end
+end)
