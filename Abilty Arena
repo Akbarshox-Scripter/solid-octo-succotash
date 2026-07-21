@@ -1,0 +1,7 @@
+task.spawn(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Akbarshox-Scripter/solid-octo-succotash/refs/heads/main/Ability%20Arena%20Auto%20Farm%20Script"))()
+end)
+
+task.spawn(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Akbarshox-Scripter/solid-octo-succotash/refs/heads/main/Auto%20Clicker"))()
+end)
