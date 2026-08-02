@@ -9,7 +9,6 @@ local Player = Players.LocalPlayer
 local Mouse = Player:GetMouse()
 local Camera = workspace.CurrentCamera
 
--- Защита UI
 local success, guiParent = pcall(function() return gethui() end)
 if not success or not guiParent then pcall(function() guiParent = CoreGui end) end
 if not guiParent then guiParent = Player:WaitForChild("PlayerGui") end
@@ -18,17 +17,15 @@ pcall(function() if guiParent:FindFirstChild("SIY_KeySystem") then guiParent.SIY
 pcall(function() if guiParent:FindFirstChild("SIY_IYHub") then guiParent.SIY_IYHub:Destroy() end end)
 pcall(function() if guiParent:FindFirstChild("SIY_PunishGui") then guiParent.SIY_PunishGui:Destroy() end end)
 
--- Создаем GUI для ключа
 local KeyGui = Instance.new("ScreenGui")
 KeyGui.Name = "SIY_KeySystem"
 KeyGui.Parent = guiParent
 KeyGui.ResetOnSpawn = false
 KeyGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Главный фрейм ключа (Имбовый Glassmorphism стиль)
 local KeyFrame = Instance.new("Frame")
 KeyFrame.Name = "KeyFrame"
-KeyFrame.Size = UDim2.new(0, 0, 0, 0) -- Начинаем с нуля для анимации
+KeyFrame.Size = UDim2.new(0, 0, 0, 0)
 KeyFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 KeyFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 KeyFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
@@ -45,18 +42,6 @@ UIStroke.Color = Color3.fromRGB(138, 43, 226)
 UIStroke.Transparency = 0.2
 UIStroke.Thickness = 2.5
 
-local UIGradient = Instance.new("UIGradient", KeyFrame)
-UIGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 180, 220))
-})
-UIGradient.Transparency = NumberSequence.new({
-    NumberSequenceKeypoint.new(0, 0.2),
-    NumberSequenceKeypoint.new(1, 0.5)
-})
-UIGradient.Rotation = 45
-
--- Текстовая метка для печатания
 local TitleLabel = Instance.new("TextLabel", KeyFrame)
 TitleLabel.Size = UDim2.new(1, -40, 0, 40)
 TitleLabel.Position = UDim2.new(0, 20, 0, 25)
@@ -67,7 +52,6 @@ TitleLabel.TextSize = 22
 TitleLabel.Font = Enum.Font.GothamBold
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Center
 
--- Поле ввода ключа
 local KeyInput = Instance.new("TextBox", KeyFrame)
 KeyInput.Size = UDim2.new(1, -40, 0, 45)
 KeyInput.Position = UDim2.new(0, 20, 0, 85)
@@ -84,7 +68,6 @@ local InputStroke = Instance.new("UIStroke", KeyInput)
 InputStroke.Color = Color3.fromRGB(80, 80, 110)
 InputStroke.Thickness = 1.5
 
--- Кнопка Activate
 local ActivateBtn = Instance.new("TextButton", KeyFrame)
 ActivateBtn.Size = UDim2.new(1, -40, 0, 45)
 ActivateBtn.Position = UDim2.new(0, 20, 0, 145)
@@ -95,12 +78,10 @@ ActivateBtn.TextSize = 16
 ActivateBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", ActivateBtn).CornerRadius = UDim.new(0, 10)
 
--- Анимация появления: маленький -> нормальный
 TweenService:Create(KeyFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
     Size = UDim2.new(0, 360, 0, 215)
 }):Play()
 
--- Эффект печатания текста "Введите ключ" по очереди
 task.spawn(function()
     task.wait(0.4)
     local fullText = "Введите ключ"
@@ -110,7 +91,6 @@ task.spawn(function()
     end
 end)
 
--- Функция запуска основного скрипта (IY Hub)
 local function launchMainHub()
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "SIY_IYHub"
@@ -485,4 +465,20 @@ local function launchMainHub()
         UIStroke.Color = color
         TabIndicator.BackgroundColor3 = color
         ExecBtn.BackgroundColor3 = color
-   
+    end
+
+    local RainbowBtn = Instance.new("TextButton", PageSettings)
+    RainbowBtn.Size = UDim2.new(1, -16, 0, 32)
+    RainbowBtn.Position = UDim2.new(0, 8, 0, 8)
+    RainbowBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+    RainbowBtn.Text = "Радужная тема"
+    RainbowBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    RainbowBtn.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", RainbowBtn).CornerRadius = UDim.new(0, 6)
+
+    RainbowBtn.MouseButton1Click:Connect(function()
+        rainbowActive = not rainbowActive
+        if rainbowActive then
+            RainbowBtn.Text = "Выключить радугу"
+            rainbowConnection = RunService.RenderStepped:Connect(function()
+                updateThemeColor(Colo
