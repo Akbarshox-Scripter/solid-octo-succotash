@@ -481,4 +481,116 @@ local function launchMainHub()
         if rainbowActive then
             RainbowBtn.Text = "Выключить радугу"
             rainbowConnection = RunService.RenderStepped:Connect(function()
-                updateThemeColor(Colo
+                updateThemeColor(Color3.fromHSV(tick() % 4 / 4, 1, 1))
+            end)
+        else
+            RainbowBtn.Text = "Радужная тема"
+            if rainbowConnection then rainbowConnection:Disconnect() end
+            updateThemeColor(Color3.fromRGB(138, 43, 226))
+        end
+    end)
+
+    local HexInput = Instance.new("TextBox", PageSettings)
+    HexInput.Size = UDim2.new(1, -16, 0, 32)
+    HexInput.Position = UDim2.new(0, 8, 0, 48)
+    HexInput.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+    HexInput.PlaceholderText = "#HEX КОД (напр: #FF0000)"
+    HexInput.Text = ""
+    HexInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+    HexInput.Font = Enum.Font.Gotham
+    Instance.new("UICorner", HexInput).CornerRadius = UDim.new(0, 6)
+    Instance.new("UIStroke", HexInput).Color = Color3.fromRGB(60, 60, 80)
+
+    HexInput.FocusLost:Connect(function(enter)
+        if enter and HexInput.Text ~= "" then
+            local hex = HexInput.Text:gsub("#", "")
+            if #hex == 6 then
+                local success, newColor = pcall(function()
+                    return Color3.fromRGB(tonumber("0x"..hex:sub(1,2)), tonumber("0x"..hex:sub(3,4)), tonumber("0x"..hex:sub(5,6)))
+                end)
+                if success and newColor then
+                    if rainbowActive then
+                        rainbowActive = false
+                        if rainbowConnection then rainbowConnection:Disconnect() end
+                        RainbowBtn.Text = "Радужная тема"
+                    end
+                    TweenService:Create(UIStroke, TweenInfo.new(0.3), {Color = newColor}):Play()
+                    TweenService:Create(TabIndicator, TweenInfo.new(0.3), {BackgroundColor3 = newColor}):Play()
+                    TweenService:Create(ExecBtn, TweenInfo.new(0.3), {BackgroundColor3 = newColor}):Play()
+                end
+            end
+            HexInput.Text = ""
+        end
+    end)
+
+    local function createTabBtn(name, yPos, targetPage)
+        local btn = Instance.new("TextButton", Sidebar)
+        btn.Size = UDim2.new(1, -14, 0, 28)
+        btn.Position = UDim2.new(0, 7, 0, yPos)
+        btn.BackgroundTransparency = 1
+        btn.Text = name
+        btn.TextColor3 = Color3.fromRGB(220, 220, 240)
+        btn.Font = Enum.Font.GothamBold
+        btn.MouseButton1Click:Connect(function()
+            TweenService:Create(TabIndicator, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2.new(0, 7, 0, yPos)}):Play()
+            for _, p in ipairs(Pages:GetChildren()) do p.Visible = false end
+            targetPage.Visible = true
+        end)
+    end
+
+    createTabBtn("Главная", 6, PageMain)
+    createTabBtn("Команды", 37, PageCmds)
+    createTabBtn("Настройки", 68, PageSettings)
+end
+
+ActivateBtn.MouseButton1Click:Connect(function()
+    local enteredKey = KeyInput.Text
+    if enteredKey == "Akbarshox" then
+        TweenService:Create(KeyFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 0, 0, 0),
+            BackgroundTransparency = 1
+        }):Play()
+        task.wait(0.4)
+        KeyGui:Destroy()
+        launchMainHub()
+    else
+        KeyGui:Destroy()
+        
+        local PunishGui = Instance.new("ScreenGui")
+        PunishGui.Name = "SIY_PunishGui"
+        PunishGui.Parent = guiParent
+        PunishGui.IgnoreGuiInset = true
+        PunishGui.ResetOnSpawn = false
+        PunishGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+
+        local BlackBg = Instance.new("Frame", PunishGui)
+        BlackBg.Size = UDim2.new(1, 0, 1, 0)
+        BlackBg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        BlackBg.BorderSizePixel = 0
+
+        local PunishText = Instance.new("TextLabel", BlackBg)
+        PunishText.Size = UDim2.new(1, 0, 1, 0)
+        PunishText.BackgroundTransparency = 1
+        PunishText.Text = "соси хуй ключ не правильный"
+        PunishText.TextColor3 = Color3.fromRGB(255, 0, 0)
+        PunishText.TextSize = 36
+        PunishText.Font = Enum.Font.GothamBold
+        PunishText.TextScaled = false
+        PunishText.TextXAlignment = Enum.TextXAlignment.Center
+        PunishText.TextYAlignment = Enum.TextYAlignment.Center
+
+        task.wait(5)
+        Player:Kick("соси хуй ключ не правильный")
+    end
+end)
+
+KeyInput.FocusLost:Connect(function(enter)
+    if enter then
+        ActivateBtn:CaptureFocus()
+        for _, connection in pairs(getconnections(ActivateBtn.MouseButton1Click)) do
+            connection:Fire()
+        end
+    end
+end)
+
+print("🔑 СИЙ Glassmorphism Key System Активен!")
