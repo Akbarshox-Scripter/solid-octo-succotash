@@ -1,0 +1,272 @@
+local parentUI = (gethui and gethui()) or game:GetService("CoreGui")
+
+-- Удаляем старую версию, если она есть (чтоб не спамить окна)
+if parentUI:FindFirstChild("NexusMenu_BrawlStyle") then
+    parentUI.NexusMenu_BrawlStyle:Destroy()
+end
+
+local NexusGui = Instance.new("ScreenGui")
+NexusGui.Name = "NexusMenu_BrawlStyle"
+NexusGui.ResetOnSpawn = false
+NexusGui.Parent = parentUI
+
+-- Уменьшенный Главный фрейм
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 600, 0, 360) -- Сделали меньше и компактнее!
+MainFrame.Position = UDim2.new(0.5, -300, 0.5, -180)
+MainFrame.BackgroundColor3 = Color3.fromRGB(80, 95, 120)
+MainFrame.BackgroundTransparency = 0.2
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = NexusGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = MainFrame
+
+-- Удобная функция для градиентов
+local function applyGradient(parent, colorTop, colorBottom, rotation)
+    local grad = Instance.new("UIGradient")
+    grad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, colorTop),
+        ColorSequenceKeypoint.new(1, colorBottom)
+    })
+    grad.Rotation = rotation or 90 -- 90 это сверху вниз
+    grad.Parent = parent
+end
+
+-- Заголовок "NEXUS MENU"
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(0, 250, 0, 35)
+Title.Position = UDim2.new(0, 15, 0, 5)
+Title.BackgroundTransparency = 1
+Title.Text = "NEXUS MENU"
+Title.Font = Enum.Font.GothamBlack
+Title.TextSize = 28
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Parent = MainFrame
+
+applyGradient(Title, Color3.fromRGB(255, 120, 0), Color3.fromRGB(255, 50, 255), 0) -- Слева направо
+
+local TitleStroke = Instance.new("UIStroke")
+TitleStroke.Thickness = 2.5
+TitleStroke.Color = Color3.fromRGB(0, 0, 0)
+TitleStroke.Parent = Title
+
+-- Подзаголовок (тг ссылка)
+local SubTitle = Instance.new("TextLabel")
+SubTitle.Size = UDim2.new(0, 150, 0, 15)
+SubTitle.Position = UDim2.new(0, 15, 0, 35)
+SubTitle.BackgroundTransparency = 1
+SubTitle.Text = "t.me/NexusBrawl"
+SubTitle.Font = Enum.Font.GothamBold
+SubTitle.TextSize = 11
+SubTitle.TextColor3 = Color3.fromRGB(255, 50, 120)
+SubTitle.TextXAlignment = Enum.TextXAlignment.Left
+SubTitle.Parent = MainFrame
+
+local SubStroke = Instance.new("UIStroke")
+SubStroke.Thickness = 1
+SubStroke.Color = Color3.fromRGB(0,0,0)
+SubStroke.Parent = SubTitle
+
+-- Контейнер для кнопок
+local ButtonContainer = Instance.new("ScrollingFrame")
+ButtonContainer.Size = UDim2.new(1, -30, 1, -100)
+ButtonContainer.Position = UDim2.new(0, 15, 0, 55)
+ButtonContainer.BackgroundTransparency = 1
+ButtonContainer.ScrollBarThickness = 0
+ButtonContainer.Parent = MainFrame
+
+local GridLayout = Instance.new("UIGridLayout")
+GridLayout.CellSize = UDim2.new(0, 110, 0, 45) -- Кнопки стали аккуратнее
+GridLayout.CellPadding = UDim2.new(0, 6, 0, 10)
+GridLayout.SortOrder = Enum.SortOrder.LayoutOrder
+GridLayout.Parent = ButtonContainer
+
+-- Функция создания кнопок с ГРАДИЕНТАМИ
+local function CreateCheatButton(name, desc, state)
+    local Btn = Instance.new("TextButton")
+    Btn.Name = name
+    Btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- Белый фон для работы градиента
+    
+    if state == "Active" then
+        applyGradient(Btn, Color3.fromRGB(110, 255, 50), Color3.fromRGB(10, 180, 10)) -- Зеленый градиент
+    elseif state == "Blue" then
+        applyGradient(Btn, Color3.fromRGB(80, 150, 255), Color3.fromRGB(10, 80, 220)) -- Синий градиент
+    else
+        applyGradient(Btn, Color3.fromRGB(170, 170, 180), Color3.fromRGB(90, 90, 100)) -- Серый градиент
+    end
+    
+    local BtnCorner = Instance.new("UICorner")
+    BtnCorner.CornerRadius = UDim.new(0, 4)
+    BtnCorner.Parent = Btn
+    
+    local BtnStroke = Instance.new("UIStroke")
+    BtnStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    BtnStroke.Thickness = 1.5
+    BtnStroke.Color = Color3.fromRGB(0, 0, 0)
+    BtnStroke.Parent = Btn
+    
+    local BtnTitle = Instance.new("TextLabel")
+    BtnTitle.Size = UDim2.new(1, 0, 0.6, 0)
+    BtnTitle.Position = UDim2.new(0, 0, 0.05, 0)
+    BtnTitle.BackgroundTransparency = 1
+    BtnTitle.Text = name
+    BtnTitle.Font = Enum.Font.GothamBlack
+    BtnTitle.TextSize = 13
+    BtnTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    BtnTitle.Parent = Btn
+    
+    -- Градиент для текста (желтый, если активна)
+    if state ~= "Inactive" then
+        applyGradient(BtnTitle, Color3.fromRGB(255, 255, 100), Color3.fromRGB(255, 170, 0))
+    else
+        applyGradient(BtnTitle, Color3.fromRGB(200, 200, 200), Color3.fromRGB(130, 130, 130))
+    end
+    
+    local TxtStroke = Instance.new("UIStroke")
+    TxtStroke.Thickness = 1.2
+    TxtStroke.Color = Color3.fromRGB(0, 0, 0)
+    TxtStroke.Parent = BtnTitle
+
+    local BtnDesc = Instance.new("TextLabel")
+    BtnDesc.Size = UDim2.new(1, 0, 0.3, 0)
+    BtnDesc.Position = UDim2.new(0, 0, 0.65, 0)
+    BtnDesc.BackgroundTransparency = 1
+    BtnDesc.Text = desc
+    BtnDesc.Font = Enum.Font.GothamBold
+    BtnDesc.TextSize = 6
+    BtnDesc.TextColor3 = Color3.fromRGB(255, 255, 255)
+    BtnDesc.Parent = Btn
+    
+    local DescStroke = Instance.new("UIStroke")
+    DescStroke.Thickness = 1
+    DescStroke.Color = Color3.fromRGB(0, 0, 0)
+    DescStroke.Parent = BtnDesc
+    
+    Btn.Parent = ButtonContainer
+end
+
+-- Спавним кнопки
+CreateCheatButton("KILL AURA", "AUTO TARGETS ENEMIES", "Active")
+CreateCheatButton("SMART AIM", "LEADS YOUR SHOTS", "Active")
+CreateCheatButton("AUTO DODGE", "EVADES PROJECTILES", "Active")
+CreateCheatButton("AUTO FARM", "PLAYS MATCHES FOR YOU", "Active")
+CreateCheatButton("X-RAY", "TRACKS ENEMY POSITION", "Active")
+
+CreateCheatButton("FOLLOW", "CHASES LIVE TARGETS", "Active")
+CreateCheatButton("SPIN", "ROTATES WHEN IDLE", "Active")
+CreateCheatButton("HOLD FIRE", "HOLDS ATTACK INPUT", "Active")
+CreateCheatButton("BALL ASSIST", "AIMS AT ENEMY GOAL", "Active")
+CreateCheatButton("NANI MOD", "DIRECT SUPER CONTROL", "Active")
+
+CreateCheatButton("ESP", "ENEMY INFO LAYER", "Active")
+CreateCheatButton("CAMERA", "UNAVAILABLE ON THIS BUILD", "Inactive")
+CreateCheatButton("AUTO PIN", "SENDS PINS", "Active")
+CreateCheatButton("COLT MOD", "TRACKS COLT BURST TARGET", "Active")
+CreateCheatButton("AUTO DODGE", "OPEN CONFIGURATION", "Blue")
+
+-- Нижний бар навигации
+local BottomBar = Instance.new("Frame")
+BottomBar.Size = UDim2.new(1, 0, 0, 40)
+BottomBar.Position = UDim2.new(0, 0, 1, -40)
+BottomBar.BackgroundColor3 = Color3.fromRGB(80, 95, 120)
+BottomBar.BorderSizePixel = 0
+BottomBar.Parent = MainFrame
+
+local BottomCorner = Instance.new("UICorner")
+BottomCorner.CornerRadius = UDim.new(0, 8)
+BottomCorner.Parent = BottomBar
+
+local BottomLayout = Instance.new("UIListLayout")
+BottomLayout.FillDirection = Enum.FillDirection.Horizontal
+BottomLayout.SortOrder = Enum.SortOrder.LayoutOrder
+BottomLayout.Parent = BottomBar
+
+local function CreateTab(name, isActive)
+    local Tab = Instance.new("TextButton")
+    Tab.Size = UDim2.new(0.2, 0, 1, 0)
+    Tab.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Tab.BorderSizePixel = 1
+    Tab.BorderColor3 = Color3.fromRGB(0,0,0)
+    Tab.Text = name
+    Tab.Font = Enum.Font.GothamBlack
+    Tab.TextSize = 11
+    Tab.TextColor3 = isActive and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(255, 255, 255)
+    
+    if isActive then
+        applyGradient(Tab, Color3.fromRGB(255, 230, 50), Color3.fromRGB(255, 150, 0)) -- Желто-оранжевый градиент для MAIN PAGE
+    else
+        applyGradient(Tab, Color3.fromRGB(90, 105, 130), Color3.fromRGB(60, 75, 100))
+        local TxtStroke = Instance.new("UIStroke")
+        TxtStroke.Thickness = 1
+        TxtStroke.Color = Color3.fromRGB(0, 0, 0)
+        TxtStroke.Parent = Tab
+    end
+    
+    Tab.Parent = BottomBar
+end
+
+CreateTab("MAIN PAGE", true)
+CreateTab("COMBAT", false)
+CreateTab("VISUAL", false)
+CreateTab("UTILITY", false)
+CreateTab("SETTINGS", false)
+
+-- Кнопка закрытия (X) с градиентом
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 25, 0, 25)
+CloseBtn.Position = UDim2.new(1, -35, 0, 10)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.Text = "X"
+CloseBtn.Font = Enum.Font.GothamBlack
+CloseBtn.TextSize = 14
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.Parent = MainFrame
+
+applyGradient(CloseBtn, Color3.fromRGB(255, 80, 80), Color3.fromRGB(200, 10, 10))
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 4)
+CloseCorner.Parent = CloseBtn
+
+local CloseStroke = Instance.new("UIStroke")
+CloseStroke.Thickness = 1.5
+CloseStroke.Parent = CloseBtn
+
+CloseBtn.MouseButton1Click:Connect(function()
+    NexusGui:Destroy()
+end)
+
+-- Драг-система
+local dragging, dragInput, dragStart, startPos
+
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+MainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
