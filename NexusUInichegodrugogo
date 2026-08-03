@@ -551,4 +551,34 @@ RunService.RenderStepped:Connect(function()
                             shortestDist = dist
                             closestHead = head
                         end
-   
+                    end
+                end
+            end
+        end
+
+        if closestHead then
+            Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, closestHead.Position), 0.15)
+        end
+    end
+end)
+
+-- No Recoil
+task.spawn(function()
+    while task.wait(0.3) do
+        if getgenv().Config.NoRecoil and LocalPlayer.Character then
+            pcall(function()
+                local tool = LocalPlayer.Character:FindFirstChildWhichIsA("Tool")
+                if tool then
+                    for _, v in pairs(tool:GetDescendants()) do
+                        if v:IsA("NumberValue") or v:IsA("CFrameValue") then
+                            local name = string.lower(v.Name)
+                            if name:find("recoil") or name:find("spread") or name:find("kick") then
+                                v.Value = 0
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+    end
+end)
