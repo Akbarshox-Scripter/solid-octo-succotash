@@ -1,272 +1,554 @@
-local parentUI = (gethui and gethui()) or game:GetService("CoreGui")
+-- ===============================================
+-- XZEONA HUB — Deep Glassmorphism & Neon Purple
+-- Password: Xzeona
+-- ===============================================
 
--- Удаляем старую версию, если она есть (чтоб не спамить окна)
-if parentUI:FindFirstChild("NexusMenu_BrawlStyle") then
-    parentUI.NexusMenu_BrawlStyle:Destroy()
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
+
+local function GetGuiParent()
+    local success, result = pcall(function()
+        return game:GetService("CoreGui")
+    end)
+    if success and result then return result end
+    return LocalPlayer:WaitForChild("PlayerGui")
 end
 
-local NexusGui = Instance.new("ScreenGui")
-NexusGui.Name = "NexusMenu_BrawlStyle"
-NexusGui.ResetOnSpawn = false
-NexusGui.Parent = parentUI
+local PlayerGui = GetGuiParent()
 
--- Уменьшенный Главный фрейм
+if PlayerGui:FindFirstChild("XzeonaHubGui") then
+    PlayerGui.XzeonaHubGui:Destroy()
+end
+
+-- ===============================================
+-- КОНФИГУРАЦИЯ ЧИТОВ
+-- ===============================================
+getgenv().Config = {
+    ESP = false,
+    Hitbox = false,
+    HitboxSize = 3,
+    NoRecoil = false,
+    Aimbot = false,
+    AimbotLock = false,
+    AimbotFOV = 120,
+    ShowFOV = true
+}
+
+-- Цветовая палитра "Neon Purple Glass"
+local THEME = {
+    Background = Color3.fromRGB(15, 10, 25),
+    GlassTrans = 0.25,
+    NeonPurple = Color3.fromRGB(175, 40, 255),
+    NeonGlow = Color3.fromRGB(130, 0, 255),
+    CardBG = Color3.fromRGB(28, 18, 45),
+    TextWhite = Color3.fromRGB(245, 240, 255),
+    TextDark = Color3.fromRGB(160, 150, 180)
+}
+
+-- FOV Круг
+local FOVCircle = Drawing.new("Circle")
+FOVCircle.Thickness = 2
+FOVCircle.NumSides = 60
+FOVCircle.Radius = getgenv().Config.AimbotFOV
+FOVCircle.Filled = false
+FOVCircle.Visible = false
+FOVCircle.Color = THEME.NeonPurple
+
+-- Главный ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "XzeonaHubGui"
+ScreenGui.Parent = PlayerGui
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- Универсальный плавный Drag
+local function EnableDragging(frame, handle)
+    handle = handle or frame
+    local dragging, dragInput, dragStart, startPos
+    handle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+    handle.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            TweenService:Create(frame, TweenInfo.new(0.12, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            }):Play()
+        end
+    end)
+end
+
+-- ===============================================
+-- 1. СИСТЕМА КЛЮЧА (KEY SYSTEM)
+-- ===============================================
+local KeyFrame = Instance.new("Frame")
+KeyFrame.Name = "KeyFrame"
+KeyFrame.Parent = ScreenGui
+KeyFrame.Size = UDim2.new(0, 320, 0, 220)
+KeyFrame.Position = UDim2.new(0.5, -160, 0.5, -110)
+KeyFrame.BackgroundColor3 = THEME.Background
+KeyFrame.BackgroundTransparency = 1
+KeyFrame.ClipsDescendants = true
+KeyFrame.Visible = true
+
+local KeyCorner = Instance.new("UICorner", KeyFrame)
+KeyCorner.CornerRadius = UDim.new(0, 16)
+
+local KeyStroke = Instance.new("UIStroke", KeyFrame)
+KeyStroke.Color = THEME.NeonPurple
+KeyStroke.Thickness = 2
+KeyStroke.Transparency = 1
+
+EnableDragging(KeyFrame)
+
+-- Печатающийся заголовок
+local TitleLabel = Instance.new("TextLabel", KeyFrame)
+TitleLabel.Size = UDim2.new(1, 0, 0, 45)
+TitleLabel.Position = UDim2.new(0, 0, 0, 15)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.TextSize = 20
+TitleLabel.TextColor3 = THEME.NeonPurple
+TitleLabel.Text = ""
+
+-- Поле ввода ключа
+local KeyInput = Instance.new("TextBox", KeyFrame)
+KeyInput.Size = UDim2.new(0.85, 0, 0, 42)
+KeyInput.Position = UDim2.new(0.075, 0, 0, 75)
+KeyInput.BackgroundColor3 = THEME.CardBG
+KeyInput.BackgroundTransparency = 1
+KeyInput.TextColor3 = THEME.TextWhite
+KeyInput.PlaceholderText = "Ключ..."
+KeyInput.PlaceholderColor3 = THEME.TextDark
+KeyInput.Font = Enum.Font.GothamMedium
+KeyInput.TextSize = 14
+KeyInput.ClearTextOnFocus = false
+KeyInput.Text = ""
+Instance.new("UICorner", KeyInput).CornerRadius = UDim.new(0, 10)
+
+local InputStroke = Instance.new("UIStroke", KeyInput)
+InputStroke.Color = THEME.NeonGlow
+InputStroke.Thickness = 1
+InputStroke.Transparency = 1
+
+-- Кнопка Подтвердить
+local ConfirmBtn = Instance.new("TextButton", KeyFrame)
+ConfirmBtn.Size = UDim2.new(0.85, 0, 0, 42)
+ConfirmBtn.Position = UDim2.new(0.075, 0, 0, 135)
+ConfirmBtn.BackgroundColor3 = THEME.NeonPurple
+ConfirmBtn.BackgroundTransparency = 1
+ConfirmBtn.Text = "Подтвердить!"
+ConfirmBtn.TextColor3 = THEME.TextWhite
+ConfirmBtn.TextTransparency = 1
+ConfirmBtn.Font = Enum.Font.GothamBold
+ConfirmBtn.TextSize = 15
+Instance.new("UICorner", ConfirmBtn).CornerRadius = UDim.new(0, 10)
+
+-- ===============================================
+-- 2. ГЛАВНЫЙ ХАБ (MAIN UI)
+-- ===============================================
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 600, 0, 360) -- Сделали меньше и компактнее!
-MainFrame.Position = UDim2.new(0.5, -300, 0.5, -180)
-MainFrame.BackgroundColor3 = Color3.fromRGB(80, 95, 120)
-MainFrame.BackgroundTransparency = 0.2
-MainFrame.BorderSizePixel = 0
-MainFrame.Parent = NexusGui
+MainFrame.Parent = ScreenGui
+MainFrame.Size = UDim2.new(0, 440, 0, 270)
+MainFrame.Position = UDim2.new(0.5, -220, 0.5, -135)
+MainFrame.BackgroundColor3 = THEME.Background
+MainFrame.BackgroundTransparency = THEME.GlassTrans
+MainFrame.ClipsDescendants = true
+MainFrame.Visible = false
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 16)
 
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 8)
-UICorner.Parent = MainFrame
+local MainStroke = Instance.new("UIStroke", MainFrame)
+MainStroke.Color = THEME.NeonPurple
+MainStroke.Thickness = 2
+MainStroke.Transparency = 0.2
 
--- Удобная функция для градиентов
-local function applyGradient(parent, colorTop, colorBottom, rotation)
-    local grad = Instance.new("UIGradient")
-    grad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, colorTop),
-        ColorSequenceKeypoint.new(1, colorBottom)
-    })
-    grad.Rotation = rotation or 90 -- 90 это сверху вниз
-    grad.Parent = parent
+EnableDragging(MainFrame)
+
+-- Шапка (TopBar)
+local TopBar = Instance.new("Frame", MainFrame)
+TopBar.Size = UDim2.new(1, 0, 0, 40)
+TopBar.BackgroundTransparency = 1
+
+local HubTitle = Instance.new("TextLabel", TopBar)
+HubTitle.Text = "Xzeona Hub"
+HubTitle.Font = Enum.Font.GothamBold
+HubTitle.TextSize = 16
+HubTitle.TextColor3 = THEME.NeonPurple
+HubTitle.Position = UDim2.new(0, 15, 0, 0)
+HubTitle.Size = UDim2.new(0, 200, 1, 0)
+HubTitle.TextXAlignment = Enum.TextXAlignment.Left
+HubTitle.BackgroundTransparency = 1
+
+-- Кнопки управления (Свернуть / Закрыть)
+local CloseBtn = Instance.new("TextButton", TopBar)
+CloseBtn.Text = "×"
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 20
+CloseBtn.TextColor3 = THEME.TextWhite
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -35, 0.5, -15)
+CloseBtn.BackgroundTransparency = 1
+
+local MinimizeBtn = Instance.new("TextButton", TopBar)
+MinimizeBtn.Text = "-"
+MinimizeBtn.Font = Enum.Font.GothamBold
+MinimizeBtn.TextSize = 20
+MinimizeBtn.TextColor3 = THEME.TextWhite
+MinimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+MinimizeBtn.Position = UDim2.new(1, -70, 0.5, -15)
+MinimizeBtn.BackgroundTransparency = 1
+
+-- Кнопка разворачивания (Иконка)
+local OpenIcon = Instance.new("TextButton", ScreenGui)
+OpenIcon.Name = "OpenIcon"
+OpenIcon.Size = UDim2.new(0, 45, 0, 45)
+OpenIcon.Position = UDim2.new(0, 20, 0.5, -22)
+OpenIcon.BackgroundColor3 = THEME.Background
+OpenIcon.BackgroundTransparency = THEME.GlassTrans
+OpenIcon.Text = "X"
+OpenIcon.Font = Enum.Font.GothamBold
+OpenIcon.TextSize = 22
+OpenIcon.TextColor3 = THEME.NeonPurple
+OpenIcon.Visible = false
+Instance.new("UICorner", OpenIcon).CornerRadius = UDim.new(0, 12)
+local IconStroke = Instance.new("UIStroke", OpenIcon)
+IconStroke.Color = THEME.NeonPurple
+IconStroke.Thickness = 2
+EnableDragging(OpenIcon)
+
+-- Боковая панель (Sidebar)
+local Sidebar = Instance.new("Frame", MainFrame)
+Sidebar.Size = UDim2.new(0, 120, 1, -40)
+Sidebar.Position = UDim2.new(0, 0, 0, 40)
+Sidebar.BackgroundTransparency = 1
+
+-- ПЛАВАЮЩИЙ ИНДИКАТОР ВКЛАДОК (Обводка)
+local TabIndicator = Instance.new("Frame", Sidebar)
+TabIndicator.Size = UDim2.new(0.85, 0, 0, 36)
+TabIndicator.Position = UDim2.new(0.075, 0, 0, 10)
+TabIndicator.BackgroundColor3 = THEME.CardBG
+TabIndicator.BackgroundTransparency = 0.5
+TabIndicator.Visible = false
+Instance.new("UICorner", TabIndicator).CornerRadius = UDim.new(0, 8)
+
+local IndicatorStroke = Instance.new("UIStroke", TabIndicator)
+IndicatorStroke.Color = THEME.NeonPurple
+IndicatorStroke.Thickness = 1.5
+
+-- Контейнер для контента
+local ContentArea = Instance.new("Frame", MainFrame)
+ContentArea.Size = UDim2.new(1, -130, 1, -50)
+ContentArea.Position = UDim2.new(0, 125, 0, 45)
+ContentArea.BackgroundTransparency = 1
+
+-- ===============================================
+-- ФУНКЦИОНАЛ ВКЛАДОК И ЭЛЕМЕНТОВ ИНТЕРФЕЙСА
+-- ===============================================
+local Tabs = {}
+local TabButtons = {}
+
+local function CreateTab(name, index)
+    local TabBtn = Instance.new("TextButton", Sidebar)
+    TabBtn.Text = name
+    TabBtn.Font = Enum.Font.GothamSemibold
+    TabBtn.TextSize = 13
+    TabBtn.TextColor3 = index == 1 and THEME.TextWhite or THEME.TextDark
+    TabBtn.Size = UDim2.new(0.85, 0, 0, 36)
+    TabBtn.Position = UDim2.new(0.075, 0, 0, 10 + ((index - 1) * 42))
+    TabBtn.BackgroundTransparency = 1
+    TabBtn.ZIndex = 2
+
+    local Page = Instance.new("ScrollingFrame", ContentArea)
+    Page.Size = UDim2.new(1, 0, 1, 0)
+    Page.BackgroundTransparency = 1
+    Page.Visible = (index == 1)
+    Page.ScrollBarThickness = 2
+    Page.ScrollBarImageColor3 = THEME.NeonPurple
+    Page.BorderSizePixel = 0
+
+    local Layout = Instance.new("UIListLayout", Page)
+    Layout.Padding = UDim.new(0, 8)
+
+    if index == 1 then
+        TabIndicator.Position = TabBtn.Position
+        TabIndicator.Visible = true
+    end
+
+    TabBtn.MouseButton1Click:Connect(function()
+        for _, btn in pairs(TabButtons) do
+            TweenService:Create(btn, TweenInfo.new(0.3), {TextColor3 = THEME.TextDark}):Play()
+        end
+        for _, p in pairs(Tabs) do p.Visible = false end
+
+        -- Ультра-плавное перемещение индикатора (обводки)
+        TweenService:Create(TabIndicator, TweenInfo.new(0.5, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
+            Position = TabBtn.Position
+        }):Play()
+
+        TweenService:Create(TabBtn, TweenInfo.new(0.3), {TextColor3 = THEME.TextWhite}):Play()
+        Page.Visible = true
+    end)
+
+    table.insert(TabButtons, TabBtn)
+    table.insert(Tabs, Page)
+    return Page
 end
 
--- Заголовок "NEXUS MENU"
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(0, 250, 0, 35)
-Title.Position = UDim2.new(0, 15, 0, 5)
-Title.BackgroundTransparency = 1
-Title.Text = "NEXUS MENU"
-Title.Font = Enum.Font.GothamBlack
-Title.TextSize = 28
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Parent = MainFrame
+local function CreateToggle(parent, text, configKey, callback)
+    local Card = Instance.new("Frame", parent)
+    Card.Size = UDim2.new(0.96, 0, 0, 40)
+    Card.BackgroundColor3 = THEME.CardBG
+    Card.BackgroundTransparency = 0.4
+    Instance.new("UICorner", Card).CornerRadius = UDim.new(0, 8)
 
-applyGradient(Title, Color3.fromRGB(255, 120, 0), Color3.fromRGB(255, 50, 255), 0) -- Слева направо
+    local Label = Instance.new("TextLabel", Card)
+    Label.Text = text
+    Label.Font = Enum.Font.GothamMedium
+    Label.TextSize = 13
+    Label.TextColor3 = THEME.TextWhite
+    Label.Position = UDim2.new(0, 12, 0, 0)
+    Label.Size = UDim2.new(0.7, 0, 1, 0)
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.BackgroundTransparency = 1
 
-local TitleStroke = Instance.new("UIStroke")
-TitleStroke.Thickness = 2.5
-TitleStroke.Color = Color3.fromRGB(0, 0, 0)
-TitleStroke.Parent = Title
+    local Switch = Instance.new("Frame", Card)
+    Switch.Size = UDim2.new(0, 42, 0, 22)
+    Switch.Position = UDim2.new(1, -52, 0.5, -11)
+    Switch.BackgroundColor3 = Color3.fromRGB(40, 30, 60)
+    Instance.new("UICorner", Switch).CornerRadius = UDim.new(1, 0)
 
--- Подзаголовок (тг ссылка)
-local SubTitle = Instance.new("TextLabel")
-SubTitle.Size = UDim2.new(0, 150, 0, 15)
-SubTitle.Position = UDim2.new(0, 15, 0, 35)
-SubTitle.BackgroundTransparency = 1
-SubTitle.Text = "t.me/NexusBrawl"
-SubTitle.Font = Enum.Font.GothamBold
-SubTitle.TextSize = 11
-SubTitle.TextColor3 = Color3.fromRGB(255, 50, 120)
-SubTitle.TextXAlignment = Enum.TextXAlignment.Left
-SubTitle.Parent = MainFrame
+    local Dot = Instance.new("Frame", Switch)
+    Dot.Size = UDim2.new(0, 16, 0, 16)
+    Dot.Position = UDim2.new(0, 3, 0.5, -8)
+    Dot.BackgroundColor3 = THEME.TextWhite
+    Instance.new("UICorner", Dot).CornerRadius = UDim.new(1, 0)
 
-local SubStroke = Instance.new("UIStroke")
-SubStroke.Thickness = 1
-SubStroke.Color = Color3.fromRGB(0,0,0)
-SubStroke.Parent = SubTitle
+    local Button = Instance.new("TextButton", Card)
+    Button.Size = UDim2.new(1, 0, 1, 0)
+    Button.BackgroundTransparency = 1
+    Button.Text = ""
 
--- Контейнер для кнопок
-local ButtonContainer = Instance.new("ScrollingFrame")
-ButtonContainer.Size = UDim2.new(1, -30, 1, -100)
-ButtonContainer.Position = UDim2.new(0, 15, 0, 55)
-ButtonContainer.BackgroundTransparency = 1
-ButtonContainer.ScrollBarThickness = 0
-ButtonContainer.Parent = MainFrame
+    Button.MouseButton1Click:Connect(function()
+        getgenv().Config[configKey] = not getgenv().Config[configKey]
+        local state = getgenv().Config[configKey]
 
-local GridLayout = Instance.new("UIGridLayout")
-GridLayout.CellSize = UDim2.new(0, 110, 0, 45) -- Кнопки стали аккуратнее
-GridLayout.CellPadding = UDim2.new(0, 6, 0, 10)
-GridLayout.SortOrder = Enum.SortOrder.LayoutOrder
-GridLayout.Parent = ButtonContainer
+        TweenService:Create(Switch, TweenInfo.new(0.25), {
+            BackgroundColor3 = state and THEME.NeonPurple or Color3.fromRGB(40, 30, 60)
+        }):Play()
 
--- Функция создания кнопок с ГРАДИЕНТАМИ
-local function CreateCheatButton(name, desc, state)
-    local Btn = Instance.new("TextButton")
-    Btn.Name = name
-    Btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- Белый фон для работы градиента
-    
-    if state == "Active" then
-        applyGradient(Btn, Color3.fromRGB(110, 255, 50), Color3.fromRGB(10, 180, 10)) -- Зеленый градиент
-    elseif state == "Blue" then
-        applyGradient(Btn, Color3.fromRGB(80, 150, 255), Color3.fromRGB(10, 80, 220)) -- Синий градиент
-    else
-        applyGradient(Btn, Color3.fromRGB(170, 170, 180), Color3.fromRGB(90, 90, 100)) -- Серый градиент
-    end
-    
-    local BtnCorner = Instance.new("UICorner")
-    BtnCorner.CornerRadius = UDim.new(0, 4)
-    BtnCorner.Parent = Btn
-    
-    local BtnStroke = Instance.new("UIStroke")
-    BtnStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    BtnStroke.Thickness = 1.5
-    BtnStroke.Color = Color3.fromRGB(0, 0, 0)
-    BtnStroke.Parent = Btn
-    
-    local BtnTitle = Instance.new("TextLabel")
-    BtnTitle.Size = UDim2.new(1, 0, 0.6, 0)
-    BtnTitle.Position = UDim2.new(0, 0, 0.05, 0)
-    BtnTitle.BackgroundTransparency = 1
-    BtnTitle.Text = name
-    BtnTitle.Font = Enum.Font.GothamBlack
-    BtnTitle.TextSize = 13
-    BtnTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    BtnTitle.Parent = Btn
-    
-    -- Градиент для текста (желтый, если активна)
-    if state ~= "Inactive" then
-        applyGradient(BtnTitle, Color3.fromRGB(255, 255, 100), Color3.fromRGB(255, 170, 0))
-    else
-        applyGradient(BtnTitle, Color3.fromRGB(200, 200, 200), Color3.fromRGB(130, 130, 130))
-    end
-    
-    local TxtStroke = Instance.new("UIStroke")
-    TxtStroke.Thickness = 1.2
-    TxtStroke.Color = Color3.fromRGB(0, 0, 0)
-    TxtStroke.Parent = BtnTitle
+        TweenService:Create(Dot, TweenInfo.new(0.25, Enum.EasingStyle.Quart), {
+            Position = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
+        }):Play()
 
-    local BtnDesc = Instance.new("TextLabel")
-    BtnDesc.Size = UDim2.new(1, 0, 0.3, 0)
-    BtnDesc.Position = UDim2.new(0, 0, 0.65, 0)
-    BtnDesc.BackgroundTransparency = 1
-    BtnDesc.Text = desc
-    BtnDesc.Font = Enum.Font.GothamBold
-    BtnDesc.TextSize = 6
-    BtnDesc.TextColor3 = Color3.fromRGB(255, 255, 255)
-    BtnDesc.Parent = Btn
-    
-    local DescStroke = Instance.new("UIStroke")
-    DescStroke.Thickness = 1
-    DescStroke.Color = Color3.fromRGB(0, 0, 0)
-    DescStroke.Parent = BtnDesc
-    
-    Btn.Parent = ButtonContainer
+        if callback then callback(state) end
+    end)
 end
 
--- Спавним кнопки
-CreateCheatButton("KILL AURA", "AUTO TARGETS ENEMIES", "Active")
-CreateCheatButton("SMART AIM", "LEADS YOUR SHOTS", "Active")
-CreateCheatButton("AUTO DODGE", "EVADES PROJECTILES", "Active")
-CreateCheatButton("AUTO FARM", "PLAYS MATCHES FOR YOU", "Active")
-CreateCheatButton("X-RAY", "TRACKS ENEMY POSITION", "Active")
+-- Создание Вкладок
+local MainTab = CreateTab("Читы", 1)
+local MiscTab = CreateTab("Инфо", 2)
 
-CreateCheatButton("FOLLOW", "CHASES LIVE TARGETS", "Active")
-CreateCheatButton("SPIN", "ROTATES WHEN IDLE", "Active")
-CreateCheatButton("HOLD FIRE", "HOLDS ATTACK INPUT", "Active")
-CreateCheatButton("BALL ASSIST", "AIMS AT ENEMY GOAL", "Active")
-CreateCheatButton("NANI MOD", "DIRECT SUPER CONTROL", "Active")
+-- Наполнение читами
+CreateToggle(MainTab, "Aimbot (Легит)", "Aimbot")
+CreateToggle(MainTab, "ESP (Враги)", "ESP")
+CreateToggle(MainTab, "Увеличить Хитбоксы", "Hitbox")
+CreateToggle(MainTab, "Без отдачи (NoRecoil)", "NoRecoil")
 
-CreateCheatButton("ESP", "ENEMY INFO LAYER", "Active")
-CreateCheatButton("CAMERA", "UNAVAILABLE ON THIS BUILD", "Inactive")
-CreateCheatButton("AUTO PIN", "SENDS PINS", "Active")
-CreateCheatButton("COLT MOD", "TRACKS COLT BURST TARGET", "Active")
-CreateCheatButton("AUTO DODGE", "OPEN CONFIGURATION", "Blue")
+-- Кнопка дискорда
+local CopyDiscordBtn = Instance.new("TextButton", MiscTab)
+CopyDiscordBtn.Size = UDim2.new(0.96, 0, 0, 40)
+CopyDiscordBtn.BackgroundColor3 = THEME.NeonPurple
+CopyDiscordBtn.Text = "Скопировать Discord"
+CopyDiscordBtn.Font = Enum.Font.GothamBold
+CopyDiscordBtn.TextColor3 = THEME.TextWhite
+CopyDiscordBtn.TextSize = 13
+Instance.new("UICorner", CopyDiscordBtn).CornerRadius = UDim.new(0, 8)
 
--- Нижний бар навигации
-local BottomBar = Instance.new("Frame")
-BottomBar.Size = UDim2.new(1, 0, 0, 40)
-BottomBar.Position = UDim2.new(0, 0, 1, -40)
-BottomBar.BackgroundColor3 = Color3.fromRGB(80, 95, 120)
-BottomBar.BorderSizePixel = 0
-BottomBar.Parent = MainFrame
+CopyDiscordBtn.MouseButton1Click:Connect(function()
+    if setclipboard then setclipboard("https://discord.gg/8NFcKeM9Ff") end
+    CopyDiscordBtn.Text = "Скопировано!"
+    task.wait(1.5)
+    CopyDiscordBtn.Text = "Скопировать Discord"
+end)
 
-local BottomCorner = Instance.new("UICorner")
-BottomCorner.CornerRadius = UDim.new(0, 8)
-BottomCorner.Parent = BottomBar
+-- ===============================================
+-- 3. АНИМАЦИИ И ЛОГИКА СТАРТА (3 СЕКУНДЫ RECOVERY)
+-- ===============================================
 
-local BottomLayout = Instance.new("UIListLayout")
-BottomLayout.FillDirection = Enum.FillDirection.Horizontal
-BottomLayout.SortOrder = Enum.SortOrder.LayoutOrder
-BottomLayout.Parent = BottomBar
-
-local function CreateTab(name, isActive)
-    local Tab = Instance.new("TextButton")
-    Tab.Size = UDim2.new(0.2, 0, 1, 0)
-    Tab.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Tab.BorderSizePixel = 1
-    Tab.BorderColor3 = Color3.fromRGB(0,0,0)
-    Tab.Text = name
-    Tab.Font = Enum.Font.GothamBlack
-    Tab.TextSize = 11
-    Tab.TextColor3 = isActive and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(255, 255, 255)
-    
-    if isActive then
-        applyGradient(Tab, Color3.fromRGB(255, 230, 50), Color3.fromRGB(255, 150, 0)) -- Желто-оранжевый градиент для MAIN PAGE
-    else
-        applyGradient(Tab, Color3.fromRGB(90, 105, 130), Color3.fromRGB(60, 75, 100))
-        local TxtStroke = Instance.new("UIStroke")
-        TxtStroke.Thickness = 1
-        TxtStroke.Color = Color3.fromRGB(0, 0, 0)
-        TxtStroke.Parent = Tab
+-- Анимация печатающегося текста
+local function TypeWriteText(label, text)
+    label.Text = ""
+    for i = 1, #text do
+        label.Text = string.sub(text, 1, i)
+        task.wait(0.06)
     end
-    
-    Tab.Parent = BottomBar
 end
 
-CreateTab("MAIN PAGE", true)
-CreateTab("COMBAT", false)
-CreateTab("VISUAL", false)
-CreateTab("UTILITY", false)
-CreateTab("SETTINGS", false)
+-- Старт анимации появления ключа (3 секунды восстановления)
+task.spawn(function()
+    KeyFrame.Size = UDim2.new(0, 280, 0, 190)
+    KeyFrame.Position = UDim2.new(0.5, -140, 0.5, -95)
 
--- Кнопка закрытия (X) с градиентом
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0, 25, 0, 25)
-CloseBtn.Position = UDim2.new(1, -35, 0, 10)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.Text = "X"
-CloseBtn.Font = Enum.Font.GothamBlack
-CloseBtn.TextSize = 14
-CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.Parent = MainFrame
+    -- Постепенное восстановление структуры UI
+    local tweenInfo = TweenInfo.new(3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    
+    TweenService:Create(KeyFrame, tweenInfo, {
+        BackgroundTransparency = THEME.GlassTrans,
+        Size = UDim2.new(0, 320, 0, 220),
+        Position = UDim2.new(0.5, -160, 0.5, -110)
+    }):Play()
+    
+    TweenService:Create(KeyStroke, tweenInfo, {Transparency = 0}):Play()
+    TweenService:Create(KeyInput, tweenInfo, {BackgroundTransparency = 0.4}):Play()
+    TweenService:Create(InputStroke, tweenInfo, {Transparency = 0.5}):Play()
+    TweenService:Create(ConfirmBtn, tweenInfo, {BackgroundTransparency = 0, TextTransparency = 0}):Play()
 
-applyGradient(CloseBtn, Color3.fromRGB(255, 80, 80), Color3.fromRGB(200, 10, 10))
+    task.wait(2.2)
+    TypeWriteText(TitleLabel, "Введи ключ")
+end)
 
-local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(0, 4)
-CloseCorner.Parent = CloseBtn
+-- Проверка пароля
+ConfirmBtn.MouseButton1Click:Connect(function()
+    if KeyInput.Text == "Xzeona" then
+        -- Анимация успешного закрытия ключа
+        local closeTween = TweenService:Create(KeyFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 0, 0, 0),
+            Position = UDim2.new(0.5, 0, 0.5, 0),
+            BackgroundTransparency = 1
+        })
+        closeTween:Play()
+        closeTween.Completed:Connect(function()
+            KeyFrame:Destroy()
+            
+            -- Появление Главного Хаба
+            MainFrame.Visible = true
+            MainFrame.Size = UDim2.new(0, 0, 0, 0)
+            MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+            
+            TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, 440, 0, 270),
+                Position = UDim2.new(0.5, -220, 0.5, -135)
+            }):Play()
+        end)
+    else
+        -- Анимация ошибки (тряска)
+        local origPos = KeyFrame.Position
+        for i = 1, 5 do
+            KeyFrame.Position = origPos + UDim2.new(0, (i % 2 == 0 and 6 or -6), 0, 0)
+            task.wait(0.04)
+        end
+        KeyFrame.Position = origPos
+        KeyInput.Text = ""
+        KeyInput.PlaceholderText = "Неверный ключ!"
+    end
+end)
 
-local CloseStroke = Instance.new("UIStroke")
-CloseStroke.Thickness = 1.5
-CloseStroke.Parent = CloseBtn
+-- Сворачивание / Разворачивание
+MinimizeBtn.MouseButton1Click:Connect(function()
+    TweenService:Create(MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+        Size = UDim2.new(0, 0, 0, 0),
+        Position = OpenIcon.Position
+    }):Play()
+    task.wait(0.35)
+    MainFrame.Visible = false
+    OpenIcon.Visible = true
+end)
+
+OpenIcon.MouseButton1Click:Connect(function()
+    OpenIcon.Visible = false
+    MainFrame.Visible = true
+    TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Size = UDim2.new(0, 440, 0, 270),
+        Position = UDim2.new(0.5, -220, 0.5, -135)
+    }):Play()
+end)
 
 CloseBtn.MouseButton1Click:Connect(function()
-    NexusGui:Destroy()
+    TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+        Size = UDim2.new(0, 0, 0, 0),
+        BackgroundTransparency = 1
+    }):Play()
+    task.wait(0.3)
+    ScreenGui:Destroy()
 end)
 
--- Драг-система
-local dragging, dragInput, dragStart, startPos
+-- ===============================================
+-- ЛОГИКА ФУНКЦИЙ ИГРЫ (RenderStepped)
+-- ===============================================
+RunService.RenderStepped:Connect(function()
+    local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    FOVCircle.Position = screenCenter
+    FOVCircle.Visible = getgenv().Config.Aimbot and getgenv().Config.ShowFOV
 
-MainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = MainFrame.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local char = player.Character
+            local isEnemy = not player.Team or player.Team ~= LocalPlayer.Team
+
+            -- ESP
+            if getgenv().Config.ESP and isEnemy then
+                if not char:FindFirstChild("XzeonaESP") then
+                    local bb = Instance.new("BillboardGui", char)
+                    bb.Name = "XzeonaESP"
+                    bb.Size = UDim2.new(4, 0, 5.5, 0)
+                    bb.AlwaysOnTop = true
+                    local f = Instance.new("Frame", bb)
+                    f.Size = UDim2.new(1, 0, 1, 0)
+                    f.BackgroundTransparency = 1
+                    local s = Instance.new("UIStroke", f)
+                    s.Color = THEME.NeonPurple
+                    s.Thickness = 2
+                end
+            elseif char:FindFirstChild("XzeonaESP") then
+                char.XzeonaESP:Destroy()
             end
-        end)
-    end
-end)
 
-MainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
+            -- Hitbox
+            if getgenv().Config.Hitbox and isEnemy then
+                local head = char:FindFirstChild("Head")
+                if head and head:IsA("BasePart") then
+                    head.Size = Vector3.new(getgenv().Config.HitboxSize, getgenv().Config.HitboxSize, getgenv().Config.HitboxSize)
+                    head.Transparency = 0.6
+                    head.CanCollide = false
+                end
+            end
+        end
     end
-end)
 
-game:GetService("UserInputService").InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
+    -- Легитный Аимбот
+    if getgenv().Config.Aimbot then
+        local closestHead = nil
+        local shortestDist = getgenv().Config.AimbotFOV
 
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character and (not player.Team or player.Team ~= LocalPlayer.Team) then
+                local head = player.Character:FindFirstChild("Head")
+                local hum = player.Character:FindFirstChildOfClass("Humanoid")
+                if head and hum and hum.Health > 0 then
+                    local pos, onScreen = Camera:WorldToViewportPoint(head.Position)
+                    if onScreen then
+                        local dist = (Vector2.new(pos.X, pos.Y) - screenCenter).Magnitude
+                        if dist < shortestDist then
+                            shortestDist = dist
+                            closestHead = head
+                        end
+   
